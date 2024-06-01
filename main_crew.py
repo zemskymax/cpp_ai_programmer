@@ -4,7 +4,8 @@ from langchain_community.llms import Ollama
 from langchain_community.tools import ShellTool
 
 
-MODEL = "codellama" # OK
+# MODEL = "codellama" # OK
+MODEL = "mistral"
 # MODEL = "dolphin-llama3"
 # MODEL = "gemma"
 # MODEL = "llama3"
@@ -12,10 +13,11 @@ MODEL = "codellama" # OK
 
 shell_tool = ShellTool()
 # print("1 - " + shell_tool.description)
-shell_tool.description = shell_tool.description + f" Use this tool to create and edit files and to compile programs. Provide the following arguments: {shell_tool.args}".replace("{", "{{").replace("}", "}}")
+shell_tool.description = shell_tool.description + f" Use this tool to create and edit files and to compile programs. Arguments: {shell_tool.args}".replace("{", "{{").replace("}", "}}")
+# shell_tool.description = shell_tool.description + f" Use this tool to create and edit files and to compile programs. Provide the following arguments: {shell_tool.args}".replace("{", "{{").replace("}", "}}")
 # print("2 - " + shell_tool.description)
 
-llm = Ollama(model=MODEL, temperature=0.2)
+llm = Ollama(model=MODEL, temperature=0)
 
 coder = Agent(
     llm=llm,
@@ -24,13 +26,13 @@ coder = Agent(
     backstory="""You are a Senior Software Engineer at a leading tech company.
         You have 10 years of experience in working with the C++ programming language.
         Ensure to produce a perfect code.""",
-    max_iter = 3,
+    max_iter = 1,
     verbose=True,
     allow_delegation=False
 )
 
 task1 = Task(
-    description="""Write a fully working and compilation free program that can count from 1 to 10. Use C++ programming language.""",
+    description="""Write a fully working (and without any compilation error) program that can count from 1 to 10. Use C++ programming language.""",
     expected_output="""Provide only the C++ code. Do not add any additional Notes or Explanations.""",
     agent=coder
 )
@@ -38,7 +40,7 @@ task1 = Task(
 compiler = Agent(
     llm=llm,
     role='C++ Compiler Specialist',
-    goal='Ensure that the C++ projects are compiled and built correctly, using various compilers.',
+    goal='Ensure all the C++ projects are compiled and built correctly, using various compilers.',
     backstory="""You are a Senior Software Engineer at a leading tech company.
         You have 10 years of experience in working with the C++ programming language and 5 years of experience working with Ubuntu's shell.
         You have a strong understanding of C++ syntax, semantics, and best practices.""",
@@ -50,8 +52,8 @@ compiler = Agent(
 
 task2 = Task(
     # description="""print the provided code.""",
-    description="""Use the available bash tool to create a file and save the whole provided code in it.""",
-    expected_output="""C++ file containing the provided code, saved in the local Ubuntu machine.""",
+    description="""Use the available bash tool to create a file and save the provided code in it.""",
+    expected_output="""File containing the provided code, saved in the local Ubuntu machine. Print new file name.""",
     # expected_output="""Runnable file saved on the local Ubuntu machine.""",
     agent=compiler
 )
